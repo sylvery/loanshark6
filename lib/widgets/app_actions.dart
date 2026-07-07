@@ -46,9 +46,7 @@ class SyncButton extends ConsumerWidget {
               : const Icon(Icons.cloud_sync_outlined),
           tooltip: pending > 0
               ? 'Sync $pending change(s)'
-              : (sync.lastSyncedAt == null
-                  ? 'Sync now'
-                  : 'Up to date'),
+              : (sync.lastSyncedAt == null ? 'Sync now' : 'Up to date'),
           onPressed: (online && !sync.syncing)
               ? () => ref.read(syncControllerProvider.notifier).syncNow()
               : null,
@@ -72,21 +70,20 @@ class AccountMenu extends ConsumerWidget {
           context.push('/login');
         } else if (value == 'logout') {
           await ref.read(authControllerProvider.notifier).signOut();
+        } else if (value == 'notifications') {
+          context.push('/settings/notifications');
         }
       },
-      itemBuilder: (_) => signedIn
-          ? [
-              const PopupMenuItem(
-                value: 'logout',
-                child: Text('Sign out'),
-              ),
-            ]
-          : [
-              const PopupMenuItem(
-                value: 'login',
-                child: Text('Sign in'),
-              ),
-            ],
+      itemBuilder: (_) => [
+        const PopupMenuItem(
+          value: 'notifications',
+          child: Text('Notification settings'),
+        ),
+        if (signedIn)
+          const PopupMenuItem(value: 'logout', child: Text('Sign out'))
+        else
+          const PopupMenuItem(value: 'login', child: Text('Sign in')),
+      ],
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'application/notifications/notification_providers.dart';
 import 'application/sync/sync_providers.dart';
 import 'core/theme/app_theme.dart';
 
@@ -13,6 +14,7 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(syncAutoRetryProvider);
+    ref.watch(notificationAutoScheduleProvider);
     return MaterialApp.router(
       title: 'BookinMan',
       theme: AppTheme.dark,
