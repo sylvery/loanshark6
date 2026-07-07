@@ -8,6 +8,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/date_helpers.dart';
 import '../../core/utils/messaging.dart';
+import '../../domain/entities/loan.dart';
 import '../../widgets/app_actions.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/overdue_badge.dart';
@@ -60,8 +61,7 @@ class LoanDetailScreen extends ConsumerWidget {
                       ),
                       _Row(
                         label: 'Interest / fortnight',
-                        value:
-                            '${loan.interestRatePerFortnightPercent}%',
+                        value: '${loan.interestRatePerFortnightPercent}%',
                       ),
                       _Row(
                         label: 'Frequency',
@@ -78,6 +78,12 @@ class LoanDetailScreen extends ConsumerWidget {
                             ? AppTheme.danger
                             : null,
                       ),
+                      if (d.penalty.amount > 0)
+                        _Row(
+                          label: 'Penalty',
+                          value: formatter.format(d.penalty),
+                          accent: AppTheme.warning,
+                        ),
                       _Row(
                         label: 'Start',
                         value: DateHelpers.format(loan.startDate),
@@ -99,8 +105,7 @@ class LoanDetailScreen extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () =>
-                          context.push('/loans/$loanId/history'),
+                      onPressed: () => context.push('/loans/$loanId/history'),
                       icon: const Icon(Icons.history),
                       label: const Text('History'),
                     ),
@@ -144,25 +149,31 @@ class LoanDetailScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               Text('Schedule', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
-              ...d.installments.map(
-                (inst) => ListTile(
+              ...d.allocations.asMap().entries.map((entry) {
+                final allocation = entry.value;
+                final inst = allocation.installment;
+                final overdue = inst.dueDate.isBefore(DateTime.now()) &&
+                    !allocation.isPaid;
+                return ListTile(
                   leading: Icon(
-                    inst.isPaid ? Icons.check_circle : Icons.radio_button_unchecked,
-                    color: inst.isPaid
+                    allocation.isPaid
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
+                    color: allocation.isPaid
                         ? Colors.green
-                        : (inst.dueDate.isBefore(DateTime.now())
-                            ? AppTheme.danger
-                            : null),
+                        : (overdue ? AppTheme.danger : null),
                   ),
                   title: Text(formatter.format(inst.amountDue)),
-                  subtitle: Text('Due ${DateHelpers.format(inst.dueDate)}'),
-                  trailing: inst.isPaid
+                  subtitle: Text(
+                    'Due ${DateHelpers.format(inst.dueDate)} - '
+                    'paid ${formatter.format(allocation.paidPrincipal)} principal / '
+                    '${formatter.format(allocation.paidInterest)} interest',
+                  ),
+                  trailing: allocation.isPaid
                       ? const Text('Paid')
-                      : (inst.dueDate.isBefore(DateTime.now())
-                          ? const Text('Overdue')
-                          : null),
-                ),
-              ),
+                      : (overdue ? const Text('Overdue') : null),
+                );
+              }),
               if (customer.hasValue && customer.value?.phone != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 16),

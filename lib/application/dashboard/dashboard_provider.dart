@@ -4,8 +4,10 @@ import '../../core/utils/date_helpers.dart';
 import '../../domain/entities/customer.dart';
 import '../../domain/entities/loan.dart';
 import '../../domain/entities/payment.dart';
+import '../../domain/entities/penalty_policy.dart';
 import '../../domain/entities/value_objects.dart';
 import '../../domain/services/loan_computation_service.dart';
+import '../lending/lending_providers.dart';
 import '../providers/core_providers.dart';
 
 class ActivityItem {
@@ -45,6 +47,7 @@ final dashboardProvider =
   final payRepo = ref.watch(paymentRepositoryProvider);
   final custRepo = ref.watch(customerRepositoryProvider);
   final comp = ref.watch(loanComputationProvider);
+  final penaltyPolicy = ref.watch(penaltyPolicyControllerProvider);
 
   final loans = await loanRepo.getAll(ownerId: ownerId);
   final payments = await payRepo.getAll(ownerId: ownerId);
@@ -62,7 +65,9 @@ final dashboardProvider =
     final status = comp.status(loan, schedule, loanPayments, now);
     if (status == LoanStatus.overdue) overdueCount++;
     if (status.isOpen) activeCount++;
-    outstandingTotal = outstandingTotal + comp.outstanding(schedule, loanPayments);
+    outstandingTotal = outstandingTotal +
+        comp.outstandingWithPenalty(
+            loan, schedule, loanPayments, now, penaltyPolicy);
   }
 
   final monthStart = DateTime(now.year, now.month, 1);

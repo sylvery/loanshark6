@@ -96,3 +96,17 @@ class LoanSchedule {
   final Money totalInterest;
   final Money totalRepayable;
 }
+
+class InstallmentAllocation {
+  const InstallmentAllocation({
+    required this.installment,
+    required this.paidPrincipal,
+    required this.paidInterest,
+    required this.isPaid,
+  });
+
+  final ScheduledInstallment installment;
+  final Money paidPrincipal;
+  final Money paidInterest;
+  final bool isPaid;
+}

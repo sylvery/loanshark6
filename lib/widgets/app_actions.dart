@@ -72,12 +72,18 @@ class AccountMenu extends ConsumerWidget {
           await ref.read(authControllerProvider.notifier).signOut();
         } else if (value == 'notifications') {
           context.push('/settings/notifications');
+        } else if (value == 'lending') {
+          context.push('/settings/lending');
         }
       },
       itemBuilder: (_) => [
         const PopupMenuItem(
           value: 'notifications',
           child: Text('Notification settings'),
+        ),
+        const PopupMenuItem(
+          value: 'lending',
+          child: Text('Lending & penalty settings'),
         ),
         if (signedIn)
           const PopupMenuItem(value: 'logout', child: Text('Sign out'))
