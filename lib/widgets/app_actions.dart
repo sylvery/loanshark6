@@ -4,29 +4,56 @@ import 'package:go_router/go_router.dart';
 
 import '../../application/auth/auth_controller.dart';
 import '../../application/providers/core_providers.dart';
+import '../../application/sync/sync_providers.dart';
 
 class SyncButton extends ConsumerWidget {
   const SyncButton({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final pending = ref.watch(syncStatusProvider).valueOrNull ?? 0;
     final user = ref.watch(authUserProvider);
     final online = ref.watch(connectivityProvider).valueOrNull ?? false;
-    final uid = user.value?.uid;
+    final sync = ref.watch(syncControllerProvider);
+    final signedIn = user.value != null;
 
-    return IconButton(
-      icon: const Icon(Icons.cloud_sync_outlined),
-      tooltip: uid == null ? 'Sign in to enable sync' : 'Sync now',
-      onPressed: (uid == null || !online)
-          ? null
-          : () async {
-              await ref.read(firestoreSyncProvider).pushNow(uid);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Synced to cloud.')),
-                );
-              }
-            },
+    if (!signedIn) {
+      return const Tooltip(
+        message: 'Sign in to sync to the cloud',
+        child: Icon(Icons.cloud_off_outlined),
+      );
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (pending > 0)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text('$pending', style: const TextStyle(fontSize: 12)),
+          ),
+        IconButton(
+          icon: sync.syncing
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.cloud_sync_outlined),
+          tooltip: pending > 0
+              ? 'Sync $pending change(s)'
+              : (sync.lastSyncedAt == null
+                  ? 'Sync now'
+                  : 'Up to date'),
+          onPressed: (online && !sync.syncing)
+              ? () => ref.read(syncControllerProvider.notifier).syncNow()
+              : null,
+        ),
+      ],
     );
   }
 }
