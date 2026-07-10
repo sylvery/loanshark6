@@ -2,160 +2,90 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../application/reports/report_export_provider.dart';
 import '../../application/reports/reports_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/currency_formatter.dart';
-import '../../widgets/app_actions.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/stat_card.dart';
 
-class ReportsScreen extends ConsumerStatefulWidget {
+class ReportsScreen extends ConsumerWidget {
   const ReportsScreen({super.key});
 
   @override
-  ConsumerState<ReportsScreen> createState() => _ReportsScreenState();
-}
-
-class _ReportsScreenState extends ConsumerState<ReportsScreen> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final reports = ref.watch(reportsProvider);
     final formatter = const CurrencyFormatter();
 
-    ref.listen(reportExportProvider, (_, next) {
-      if (next.status == ReportExportStatus.done && next.path != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Report saved to ${next.path}'),
-            action: SnackBarAction(
-              label: 'Open',
-              onPressed: () =>
-                  ref.read(reportExportProvider.notifier).open(next.path!),
+    return reports.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => EmptyState(message: 'Error: $e'),
+      data: (data) => RefreshIndicator(
+        onRefresh: () async => ref.refresh(reportsProvider),
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _PortfolioCards(data: data, formatter: formatter),
+            const SizedBox(height: 24),
+            _TrendSection(data: data, formatter: formatter),
+            const SizedBox(height: 24),
+            Text(
+              'Collections (6 months)',
+              style: Theme.of(context).textTheme.titleMedium,
             ),
-          ),
-        );
-      } else if (next.status == ReportExportStatus.error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: ${next.error}')),
-        );
-      }
-    });
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Reports'),
-        actions: const [
-          _ExportMenu(),
-          SyncButton(),
-          AccountMenu(),
-        ],
-      ),
-      body: reports.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => EmptyState(message: 'Error: $e'),
-        data: (data) => RefreshIndicator(
-          onRefresh: () async => ref.refresh(reportsProvider),
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              _PortfolioCards(data: data, formatter: formatter),
-              const SizedBox(height: 24),
-              _TrendSection(data: data, formatter: formatter),
-              const SizedBox(height: 24),
-              Text(
-                'Collections (6 months)',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    children: data.monthlyCollections
-                        .map(
-                          (m) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(m.label),
-                                Text(formatter.format(m.amount)),
-                              ],
-                            ),
+            const SizedBox(height: 8),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: data.monthlyCollections
+                      .map(
+                        (m) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(m.label),
+                              Text(formatter.format(m.amount)),
+                            ],
                           ),
-                        )
-                        .toList(),
-                  ),
+                        ),
+                      )
+                      .toList(),
                 ),
               ),
-              const SizedBox(height: 24),
-              Text(
-                'Overdue loans',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              if (data.overdueLoans.isEmpty)
-                const EmptyState(
-                  message: 'No overdue loans. Well done!',
-                  icon: Icons.check_circle_outline,
-                )
-              else
-                ...data.overdueLoans.map(
-                  (item) => Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.warning_amber,
-                          color: AppTheme.danger),
-                      title: Text(item.customerName),
-                      subtitle: item.phone == null
-                          ? const Text('Outstanding')
-                          : Text(item.phone!),
-                      trailing: Text(
-                        formatter.format(item.outstanding),
-                        style: const TextStyle(color: AppTheme.danger),
-                      ),
-                      onTap: () => context.push('/loans/${item.loanId}'),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Overdue loans',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            if (data.overdueLoans.isEmpty)
+              const EmptyState(
+                message: 'No overdue loans. Well done!',
+                icon: Icons.check_circle_outline,
+              )
+            else
+              ...data.overdueLoans.map(
+                (item) => Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.warning_amber,
+                        color: AppTheme.danger),
+                    title: Text(item.customerName),
+                    subtitle: item.phone == null
+                        ? const Text('Outstanding')
+                        : Text(item.phone!),
+                    trailing: Text(
+                      formatter.format(item.outstanding),
+                      style: const TextStyle(color: AppTheme.danger),
                     ),
+                    onTap: () => context.push('/loans/${item.loanId}'),
                   ),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
-    );
-  }
-}
-
-class _ExportMenu extends ConsumerWidget {
-  const _ExportMenu();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final exporting =
-        ref.watch(reportExportProvider).status == ReportExportStatus.exporting;
-    final data = ref.watch(reportsProvider).valueOrNull;
-
-    return PopupMenuButton<ReportFormat>(
-      icon: exporting
-          ? const SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : const Icon(Icons.download_outlined),
-      tooltip: 'Export report',
-      enabled: data != null && !exporting,
-      onSelected: (format) =>
-          ref.read(reportExportProvider.notifier).export(data!, format),
-      itemBuilder: (_) => const [
-        PopupMenuItem(
-          value: ReportFormat.csv,
-          child: Text('Export as CSV'),
-        ),
-        PopupMenuItem(
-          value: ReportFormat.pdf,
-          child: Text('Export as PDF'),
-        ),
-      ],
     );
   }
 }

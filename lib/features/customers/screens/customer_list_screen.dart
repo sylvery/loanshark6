@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../application/customer/customer_providers.dart';
-import '../../widgets/app_actions.dart';
+import '../../application/filters.dart';
 import '../../widgets/customer_tile.dart';
 import '../../widgets/empty_state.dart';
 
@@ -28,10 +28,6 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
     final customers = ref.watch(customerListProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Customers'),
-        actions: const [SyncButton(), AccountMenu()],
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/customers/new'),
         child: const Icon(Icons.person_add),
@@ -44,7 +40,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
               controller: _search,
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.search),
-                hintText: 'Search customers',
+                hintText: 'Search by name or phone',
               ),
               onChanged: (_) => setState(() {}),
             ),
@@ -54,12 +50,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => EmptyState(message: 'Error: $e'),
               data: (list) {
-                final query = _search.text.toLowerCase();
-                final filtered = query.isEmpty
-                    ? list
-                    : list
-                        .where((c) => c.name.toLowerCase().contains(query))
-                        .toList();
+                final filtered = filterCustomers(list, _search.text);
                 if (filtered.isEmpty) {
                   return const EmptyState(
                     message: 'No customers found.',
