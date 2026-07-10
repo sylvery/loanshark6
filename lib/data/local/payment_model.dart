@@ -10,7 +10,7 @@ class PaymentModel {
   PaymentModel();
 
   @Id()
-  String id = '';
+  late Id id;
 
   late String loanId;
   late double amount;
