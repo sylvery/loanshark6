@@ -28,7 +28,10 @@ class SyncQueueRepositoryIsar implements SyncQueueRepository {
 
   @override
   Future<void> markApplied(String id) async {
-    final model = await _db.isar.syncOperationModels.get(id);
+    final model = await _db.isar.syncOperationModels
+        .filter()
+        .uuidEqualTo(id)
+        .findFirst();
     if (model == null) return;
     final updated =
         SyncOperationModel.fromDomain(model.toDomain().markApplied());

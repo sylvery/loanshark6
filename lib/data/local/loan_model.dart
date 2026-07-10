@@ -10,8 +10,9 @@ class LoanModel {
   LoanModel();
 
   @Id()
-  Id id = '';
+  int id = Isar.autoIncrement;
 
+  late String uuid;
   late String customerId;
   late double principalAmount;
   late String principalCurrency;
@@ -24,7 +25,7 @@ class LoanModel {
   late bool writtenOff;
 
   Loan toDomain() => Loan(
-        id: id,
+        id: uuid,
         customerId: customerId,
         principal: Money(principalAmount, principalCurrency),
         interestRatePerFortnightPercent: interestRatePerFortnightPercent,
@@ -39,7 +40,7 @@ class LoanModel {
       );
 
   static LoanModel fromDomain(Loan loan) => LoanModel()
-    ..id = loan.id
+    ..uuid = loan.id
     ..customerId = loan.customerId
     ..principalAmount = loan.principal.amount
     ..principalCurrency = loan.principal.currencyCode

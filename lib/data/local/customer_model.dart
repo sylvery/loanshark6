@@ -9,8 +9,9 @@ class CustomerModel {
   CustomerModel();
 
   @Id()
-  Id id = '';
+  int id = Isar.autoIncrement;
 
+  late String uuid;
   late String name;
   String? phone;
   String? address;
@@ -19,7 +20,7 @@ class CustomerModel {
   String? ownerId;
 
   Customer toDomain() => Customer(
-        id: id,
+        id: uuid,
         name: name,
         phone: phone,
         address: address,
@@ -29,7 +30,7 @@ class CustomerModel {
       );
 
   static CustomerModel fromDomain(Customer customer) => CustomerModel()
-    ..id = customer.id
+    ..uuid = customer.id
     ..name = customer.name
     ..phone = customer.phone
     ..address = customer.address
