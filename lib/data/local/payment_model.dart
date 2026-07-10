@@ -10,7 +10,7 @@ class PaymentModel {
   PaymentModel();
 
   @Id()
-  int id = Isar.autoIncrement;
+  int id;
 
   late String uuid;
   late String loanId;
