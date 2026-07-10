@@ -1,7 +1,7 @@
 name: bookinman
 description: BookinMan — offline-first Loan & CRM management app for iOS and Android.
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.0+3
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -25,6 +25,7 @@ dependencies:
   connectivity_plus: ^6.0.3
   path_provider: ^2.1.2
   uuid: ^4.4.0
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
