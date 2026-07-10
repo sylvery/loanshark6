@@ -4,6 +4,7 @@ import '../../core/utils/date_helpers.dart';
 import '../../domain/entities/penalty_policy.dart';
 import '../../domain/entities/value_objects.dart';
 import '../../domain/services/loan_computation_service.dart';
+import '../../domain/services/portfolio_analytics_service.dart';
 import '../lending/lending_providers.dart';
 import '../providers/core_providers.dart';
 
@@ -32,10 +33,18 @@ class ReportsData {
   const ReportsData({
     required this.monthlyCollections,
     required this.overdueLoans,
+    required this.analytics,
+    required this.trends,
   });
   final List<MonthlyCollection> monthlyCollections;
   final List<OverdueReportItem> overdueLoans;
+  final PortfolioAnalytics analytics;
+  final List<MonthlyTrend> trends;
 }
+
+final portfolioAnalyticsProvider = Provider<PortfolioAnalyticsService>(
+  (ref) => PortfolioAnalyticsService(ref.watch(loanComputationProvider)),
+);
 
 final reportsProvider = FutureProvider.autoDispose<ReportsData>((ref) async {
   final ownerId = ref.watch(ownerIdProvider);
@@ -43,6 +52,7 @@ final reportsProvider = FutureProvider.autoDispose<ReportsData>((ref) async {
   final payRepo = ref.watch(paymentRepositoryProvider);
   final custRepo = ref.watch(customerRepositoryProvider);
   final comp = ref.watch(loanComputationProvider);
+  final analytics = ref.watch(portfolioAnalyticsProvider);
   final penaltyPolicy = ref.watch(penaltyPolicyControllerProvider);
 
   final loans = await loanRepo.getAll(ownerId: ownerId);
@@ -85,5 +95,10 @@ final reportsProvider = FutureProvider.autoDispose<ReportsData>((ref) async {
     }
   }
 
-  return ReportsData(monthlyCollections: monthly, overdueLoans: overdue);
+  return ReportsData(
+    monthlyCollections: monthly,
+    overdueLoans: overdue,
+    analytics: analytics.compute(loans, payments, penaltyPolicy, now),
+    trends: analytics.monthlyTrends(loans, payments),
+  );
 });
