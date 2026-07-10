@@ -9,7 +9,7 @@ class CustomerModel {
   CustomerModel();
 
   @Id()
-  String id = '';
+  late Id id;
 
   late String name;
   String? phone;
