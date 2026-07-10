@@ -9,7 +9,7 @@ class CustomerModel {
   CustomerModel();
 
   @Id()
-  int id;
+  int id = 0;
 
   late String uuid;
   late String name;
