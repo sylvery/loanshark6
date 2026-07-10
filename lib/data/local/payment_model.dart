@@ -10,7 +10,7 @@ class PaymentModel {
   PaymentModel();
 
   @Id()
-  late Id id;
+  Id id = Isar.autoIncrement;
 
   late String loanId;
   late double amount;

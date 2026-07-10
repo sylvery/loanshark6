@@ -9,7 +9,7 @@ class CustomerModel {
   CustomerModel();
 
   @Id()
-  late Id id;
+  Id id = Isar.autoIncrement;
 
   late String name;
   String? phone;

@@ -10,7 +10,7 @@ class LoanModel {
   LoanModel();
 
   @Id()
-  late Id id;
+  Id id = Isar.autoIncrement;
 
   late String customerId;
   late double principalAmount;
