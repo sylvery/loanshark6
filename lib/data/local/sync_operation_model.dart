@@ -9,7 +9,7 @@ class SyncOperationModel {
   SyncOperationModel();
 
   @Id()
-  String id = '';
+  Id id = '';
 
   late String entity;
   late String entityId;

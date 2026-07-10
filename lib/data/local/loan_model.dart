@@ -10,7 +10,7 @@ class LoanModel {
   LoanModel();
 
   @Id()
-  String id = '';
+  Id id = '';
 
   late String customerId;
   late double principalAmount;
