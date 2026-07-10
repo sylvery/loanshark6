@@ -10,8 +10,9 @@ class PaymentModel {
   PaymentModel();
 
   @Id()
-  Id id = Isar.autoIncrement;
+  int id = 0;
 
+  late String uuid;
   late String loanId;
   late double amount;
   late String currency;
@@ -21,7 +22,7 @@ class PaymentModel {
   late int createdAt;
 
   Payment toDomain() => Payment(
-        id: id,
+        id: uuid,
         loanId: loanId,
         amount: Money(amount, currency),
         paidAt: DateTime.fromMillisecondsSinceEpoch(paidAt),
@@ -31,7 +32,7 @@ class PaymentModel {
       );
 
   static PaymentModel fromDomain(Payment payment) => PaymentModel()
-    ..id = payment.id
+    ..uuid = payment.id
     ..loanId = payment.loanId
     ..amount = payment.amount.amount
     ..currency = payment.amount.currencyCode

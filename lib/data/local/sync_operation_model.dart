@@ -9,8 +9,9 @@ class SyncOperationModel {
   SyncOperationModel();
 
   @Id()
-  Id id = Isar.autoIncrement;
+  int id = 0;
 
+  late String uuid;
   late String entity;
   late String entityId;
   late int type;
@@ -19,7 +20,7 @@ class SyncOperationModel {
   late bool applied;
 
   SyncOperation toDomain() => SyncOperation(
-        id: id,
+        id: uuid,
         entity: entity,
         entityId: entityId,
         type: SyncOperationType.values[type],
@@ -29,7 +30,7 @@ class SyncOperationModel {
       );
 
   static SyncOperationModel fromDomain(SyncOperation op) => SyncOperationModel()
-    ..id = op.id
+    ..uuid = op.id
     ..entity = op.entity
     ..entityId = op.entityId
     ..type = op.type.index
