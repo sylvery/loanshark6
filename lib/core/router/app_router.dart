@@ -18,6 +18,7 @@ import '../features/payments/screens/record_payment_screen.dart';
 import '../features/reports/screens/reports_screen.dart';
 import '../features/settings/screens/notification_preferences_screen.dart';
 import '../features/settings/screens/lending_settings_screen.dart';
+import '../features/settings/screens/settings_screen.dart';
 import '../features/shell/app_shell.dart';
 
 class AuthListenable extends ChangeNotifier {
@@ -58,6 +59,10 @@ GoRouter buildRouter(AuthListenable auth) {
       GoRoute(
         path: '/settings/lending',
         builder: (context, state) => const LendingSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppShell(navigationShell: shell),

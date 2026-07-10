@@ -74,9 +74,15 @@ class AccountMenu extends ConsumerWidget {
           context.push('/settings/notifications');
         } else if (value == 'lending') {
           context.push('/settings/lending');
+        } else if (value == 'settings') {
+          context.push('/settings');
         }
       },
       itemBuilder: (_) => [
+        const PopupMenuItem(
+          value: 'settings',
+          child: Text('Settings'),
+        ),
         const PopupMenuItem(
           value: 'notifications',
           child: Text('Notification settings'),
