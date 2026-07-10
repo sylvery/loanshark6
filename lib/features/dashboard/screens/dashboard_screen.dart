@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../application/dashboard/dashboard_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/currency_formatter.dart';
-import '../../widgets/app_actions.dart';
 import '../../widgets/empty_state.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -17,10 +16,6 @@ class DashboardScreen extends ConsumerWidget {
     final formatter = const CurrencyFormatter();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('BookinMan'),
-        actions: const [SyncButton(), AccountMenu()],
-      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/customers/new'),
         icon: const Icon(Icons.add),

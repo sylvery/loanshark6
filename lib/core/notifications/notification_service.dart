@@ -8,6 +8,16 @@ class NotificationService {
   static const String channelId = 'loan_reminders';
   static const String channelName = 'Loan Reminders';
 
+  NotificationDetails get _details => const NotificationDetails(
+        android: AndroidNotificationDetails(
+          channelId,
+          channelName,
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+        iOS: DarwinNotificationDetails(),
+      );
+
   Future<void> initialize() async {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const ios = DarwinInitializationSettings();
@@ -16,33 +26,46 @@ class NotificationService {
     );
   }
 
+  Future<void> scheduleExact({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledDate,
+  }) async {
+    await _plugin.schedule(
+      id,
+      title,
+      body,
+      scheduledDate,
+      _details,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+  }
+
+  Future<void> scheduleDailyDigest({
+    required int id,
+    required String title,
+    required String body,
+  }) async {
+    await _plugin.periodicallyShow(
+      id,
+      title,
+      body,
+      RepeatInterval.daily,
+      _details,
+      androidAllowWhileIdle: true,
+    );
+  }
+
+  Future<void> cancel(int id) async => _plugin.cancel(id);
+
+  Future<void> cancelAll() async => _plugin.cancelAll();
+
   Future<void> showReminder({
     required int id,
     required String title,
     required String body,
   }) async {
-    const details = NotificationDetails(
-      android: AndroidNotificationDetails(
-        channelId,
-        channelName,
-        importance: Importance.high,
-        priority: Priority.high,
-      ),
-      iOS: DarwinNotificationDetails(),
-    );
-    await _plugin.show(id, title, body, details);
-  }
-
-  Future<void> notifyOverdue({
-    required String customerName,
-    required double amount,
-    required String currency,
-  }) async {
-    await showReminder(
-      id: customerName.hashCode,
-      title: 'Overdue loan',
-      body: '$customerName has an overdue payment of $currency '
-          '${amount.toStringAsFixed(2)}.',
-    );
+    await _plugin.show(id, title, body, _details);
   }
 }

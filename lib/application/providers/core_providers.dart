@@ -3,23 +3,35 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/notifications/notification_service.dart';
 import '../../data/local/local_db.dart';
-import '../../data/remote/firestore_sync.dart';
+import '../../data/local/settings_repository.dart';
 import '../../data/repositories/customer_repository.dart';
 import '../../data/repositories/loan_repository.dart';
 import '../../data/repositories/payment_repository.dart';
+import '../../data/repositories/sync_queue_repository.dart';
+import '../../data/remote/firestore_sync.dart';
 import '../../domain/ports/customer_repository.dart';
 import '../../domain/ports/loan_repository.dart';
 import '../../domain/ports/payment_repository.dart';
+import '../../domain/ports/settings_repository.dart';
+import '../../domain/ports/sync_queue_repository.dart';
 import '../../domain/services/interest_calculator.dart';
 import '../../domain/services/loan_computation_service.dart';
 import '../../domain/services/schedule_generator.dart';
+import '../../domain/services/sync_policy.dart';
 
 final localDbProvider = Provider<LocalDb>((ref) {
   throw UnsupportedError(
     'localDbProvider must be overridden with an opened LocalDb instance.',
+  );
+});
+
+final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
+  throw UnsupportedError(
+    'sharedPreferencesProvider must be overridden with SharedPreferences.instance.',
   );
 });
 
@@ -33,6 +45,20 @@ final loanRepositoryProvider = Provider<LoanRepository>(
 
 final paymentRepositoryProvider = Provider<PaymentRepository>(
   (ref) => PaymentRepositoryIsar(ref.watch(localDbProvider)),
+);
+
+final deviceIdProvider = Provider<String>((ref) {
+  throw UnsupportedError(
+    'deviceIdProvider must be overridden with a generated device id.',
+  );
+});
+
+final syncQueueRepositoryProvider = Provider<SyncQueueRepository>(
+  (ref) => SyncQueueRepositoryIsar(ref.watch(localDbProvider)),
+);
+
+final settingsRepositoryProvider = Provider<SettingsRepository>(
+  (ref) => SharedPreferencesSettings(ref.watch(sharedPreferencesProvider)),
 );
 
 final interestCalculatorProvider =
@@ -59,6 +85,8 @@ final firestoreSyncProvider = Provider<FirestoreSyncService>(
     ref.watch(customerRepositoryProvider),
     ref.watch(loanRepositoryProvider),
     ref.watch(paymentRepositoryProvider),
+    ref.watch(syncQueueRepositoryProvider),
+    const SyncPolicy(),
   ),
 );
 
@@ -72,7 +100,6 @@ final ownerIdProvider = Provider<String?>(
 
 final connectivityProvider = StreamProvider<bool>((ref) {
   final controller = Connectivity();
-  return controller.onConnectivityChanged.map(
-    (list) => !list.contains(ConnectivityResult.none),
-  );
+  return controller.onConnectivityChanged
+      .map((list) => !list.contains(ConnectivityResult.none));
 });

@@ -19,7 +19,8 @@ class CustomerRepositoryIsar implements CustomerRepository {
 
   @override
   Future<Customer?> getById(String id) async {
-    final model = await _db.isar.customerModels.get(id);
+    final model =
+        await _db.isar.customerModels.filter().uuidEqualTo(id).findFirst();
     return model?.toDomain();
   }
 
@@ -40,7 +41,7 @@ class CustomerRepositoryIsar implements CustomerRepository {
   @override
   Future<void> delete(String id) async {
     await _db.isar.writeTxn(() async {
-      await _db.isar.customerModels.delete(id);
+      await _db.isar.customerModels.filter().uuidEqualTo(id).delete();
     });
   }
 

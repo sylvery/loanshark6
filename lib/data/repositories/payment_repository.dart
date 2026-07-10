@@ -26,7 +26,8 @@ class PaymentRepositoryIsar implements PaymentRepository {
 
   @override
   Future<Payment?> getById(String id) async {
-    final model = await _db.isar.paymentModels.get(id);
+    final model =
+        await _db.isar.paymentModels.filter().uuidEqualTo(id).findFirst();
     return model?.toDomain();
   }
 
@@ -42,7 +43,7 @@ class PaymentRepositoryIsar implements PaymentRepository {
   @override
   Future<void> delete(String id) async {
     await _db.isar.writeTxn(() async {
-      await _db.isar.paymentModels.delete(id);
+      await _db.isar.paymentModels.filter().uuidEqualTo(id).delete();
     });
   }
 

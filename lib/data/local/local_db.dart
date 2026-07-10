@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'customer_model.dart';
 import 'loan_model.dart';
 import 'payment_model.dart';
+import 'sync_operation_model.dart';
 
 class LocalDb {
   LocalDb(this.isar);
@@ -19,6 +20,7 @@ class LocalDb {
         CustomerModelSchema,
         LoanModelSchema,
         PaymentModelSchema,
+        SyncOperationModelSchema,
       ],
       directory: dir.path,
       name: 'bookinman',

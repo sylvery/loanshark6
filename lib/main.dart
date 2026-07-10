@@ -2,6 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 import 'app.dart';
 import 'application/providers/core_providers.dart';
@@ -18,9 +20,12 @@ void main() async {
   );
 
   final db = await LocalDb.open();
+  final prefs = await SharedPreferences.getInstance();
 
   final notificationService = NotificationService(FlutterLocalNotificationsPlugin());
   await notificationService.initialize();
+
+  final deviceId = const Uuid().v4();
 
   final auth = AuthListenable();
   final router = buildRouter(auth);
@@ -29,7 +34,9 @@ void main() async {
     ProviderScope(
       overrides: [
         localDbProvider.overrideWithValue(db),
+        sharedPreferencesProvider.overrideWithValue(prefs),
         notificationServiceProvider.overrideWithValue(notificationService),
+        deviceIdProvider.overrideWithValue(deviceId),
       ],
       child: MyApp(router: router),
     ),

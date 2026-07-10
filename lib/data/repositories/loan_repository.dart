@@ -29,7 +29,8 @@ class LoanRepositoryIsar implements LoanRepository {
 
   @override
   Future<Loan?> getById(String id) async {
-    final model = await _db.isar.loanModels.get(id);
+    final model =
+        await _db.isar.loanModels.filter().uuidEqualTo(id).findFirst();
     return model?.toDomain();
   }
 
@@ -50,7 +51,7 @@ class LoanRepositoryIsar implements LoanRepository {
   @override
   Future<void> delete(String id) async {
     await _db.isar.writeTxn(() async {
-      await _db.isar.loanModels.delete(id);
+      await _db.isar.loanModels.filter().uuidEqualTo(id).delete();
     });
   }
 
